@@ -1,0 +1,69 @@
+Hello Chris, 
+
+Here's a new assignment.  It is more complicated than previous assignments.  It involves pointers, dynamic data structures and queuing.  I may have missed some important details so ask if not sure. 
+
+You will create a task dispatcher that creates a queue of work to be performed and then goes through the queue and invokes the appropriate routine to perform the work. 
+
+There will be 3 queues: 
+-ready queue, a link list of work ready to dispatched, maintained in priority order. 
+-dead queue, a link list of work that was not dispatched, maintained in LIFO order of dying. 
+-completed queue, a link list of work that has been dispatched and completed processing in LIFO order of completion. 
+
+The 3 queues will be bidrectional and non-circular. 
+
+The dispatcher will first read in a set of requests to be performed and populate the ready queue.  Then the dispatcher will serially dispatch one task at a time in priority order.  Tasks with a priority or iteration count of 0 will be enqueued on the dead queue.  When each dispatchable task completes, it will be placed back on the ready queue if it is to be executed again or placed on the complete queue if it was executed and done. Execution ends when there are no tasks left on the ready queue. 
+  
+The elements on the queues will be a series of data areas, each one called a TCB (Task Control Block).  Each TCB represents a single unit of work or request to be done.  A TCB will exist only on one of the 3 queues.  Memory for TCBs is to acquired dynamically as needed.  The memory used by the TCBs is to be explicitly released or freed at the end of all processing. 
+
+To populate the ready queue:
+From the standard input stream, read 3 values: requesttype iteration priority
+       (a) requesttype is a string that says the function to be performed and will be one of these values: DISPLAY or ADD or SUBTRACT or DONE
+       (b) iteration to be an integer from 0 to 255 saying how many times the task is to be executed.  0 means never.
+       (c) priority is an integer from 0 to 255 where 0 means do not do dispatch this task, 1 is the highest priority, 255 is the lowest priority.
+Enqueue a TCB on the ready queue for the request.
+The TCB will contain (a) a forward pointer, (b) a backward pointer, (c) priority of task, (d) routine to be invoked, (e) iteration count, (f) date/time of ready enqueue, (g) space for ready dequeue date/time
+The memory for the TCB is to be dynamically allocated.
+The field in the TCB that points to the routine to be invoked can be one of 3 values from simple to sophisticated:
+       (a) The actually string from the input like the word DISPLAY.  The dispatcher dequeue code then equates that string to the function to invoke.
+       (b) An encoded value that maps to the routine.  A table lookup is done to map the request type to a value.  Better use same table in the dequeuer. 
+       (c) The actual address of the function that performs the work to be done for that request.  The dequeue code will be completely unaware of what is being invoked.  Just picks up the address and goes to it.
+The queue will be maintained in priority order.
+A task name from the input stream of DONE means there are no more tasks to queue.
+The enqueuing of work must be task agnostic.  IOW, there should be nothing in the dispatcher enqueue code particular to a specific task type.
+
+Once DONE is received, dispatch the work:
+Dequeue the first TCB off the ready queue and fill in date/time of dequeue.
+For iteration counts of 0, immediately enqueue to the dead queue.
+For priority 0 tasks, immediately enqueue to the dead queue.
+For dispatchable work, invoke the function that supports the task.
+A TCB should always exist on one and only one of the queues at any given time so dequeuing and the subsequent enqueue should be atomic.
+The dequeuing routine must be task agnostic.  IOW, there should be nothing in the dispatcher dequeue code particular to a specific task type.
+Iteration counts greater than one mean to re-enqueue the task on the ready queue until it has been invoked that number of times.
+For iteration counts greater than 1, the function itself will randomly generate a priority for the next iteration and pass it back to the dispatcher who will move it to the correct place on the queue thereby allowing dynamic priority scheduling of iterated requests.
+Dispatcher is done when ready queue is empty.
+
+Functions
+Write a function for each function type.  That means 3 functions.
+The only task-specific code should be in the functions themselves and no where else.
+The DISPLAY request means to randomly select a famous quote and display it on the screen.  The function will have n famous quotes and will randomly pick one and send it to the output stream.
+The ADD request will randomly generate 2 integers, add them and send the 3 values to the output stream with appropriate operators.
+Ditto for SUBTRACT.
+
+When the ready queue is empty, generate a report showing, in order, the TCBs on each of the 3 queues and their contents. 
+
+Sample input: 
+DISPLAY 0 1 
+DISPLAY 10 0 
+ADD 1 200 
+SUBTRACT 1 100 
+DISPLAY 3 1 
+DONE 
+
+and output (minus the TCB display): 
+Manly yes but I like it too. 
+12-7=5 
+Though I walk through the valley of death, I fear no evil. 
+2+2=4 
+All men are created equal. 
+
+ddo

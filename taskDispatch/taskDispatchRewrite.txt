@@ -1,0 +1,55 @@
+Task Dispatcher Breakdown
+Creates queue of work to be performed then goes through that queue and invokes routine to perform work
+Ready, Dead, and Completed Queue
+
+1: Read in set of requests to be performed
+2: Populate ready queue with them
+3: Serially dispatch one task at a time in priority order
+4: Priority or iteration count of 0 are DOA
+5: Place task back on ready queue once completed if iteration > 0, or on completed if iteration = 0
+6: Execution ends when ready queue is empty
+
+Each element will be a data area, called a TCB
+TCB represents one unit of work or request to be done
+Each TCB never exists on more than one queue
+Memory for each is acquired dynamically as needed
+Memory is explicitly released or freed at end of all processing
+
+Populate Ready Queue;
+3 Values per TCB: RequestType, Iteration, Priority
+RequestType is string (function; DISPLAY, ADD, SUBTRACT, DONE)
+Iteration is integer from 0 - 255, 0 is never
+Priority is integer from 0 - 255 where 0 means do not dispatch 1 is highest
+
+Enqueue newly read TCB onto queue
+
+TCB Contents:
+Forward Pointer
+Backward Pointer
+Priority of Task
+Routine to be Invoked
+Iteration count
+Date/time of ready enqueue
+space for ready dequeue date/time
+
+Dispatcher decodes the code and figures out which  function to run
+TABLE IS USED to map each function to its string equivalent
+Address of function that performs the work (pointer to function)
+Priority order
+DONE TCB Request Type means no more data to read in
+Enqueueing of work must be task-agnostic
+
+Dispatch all work once DONE received
+1: Dequeue first TCB off ready and fill date/time of dequeue
+1b: if Iteration == 0 -> enqueue to dead
+1c: if Priority == 0 -> enqueue to dead
+2: Invoke function that supports the task
+3: Generate random priority for subsuquent runs of same process (determined at completion time)
+4: Ready queue == empty, return
+
+Function types:
+1: DISPLAY randomly select famous quote and display to the screen
+2: ADD generates two integers, adds them, and sends the 3 values to output with operators
+3: SUBTRACT same as above
+
+Generate report showing order the TCBs on each of the 3 queues and their contents
